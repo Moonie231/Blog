@@ -18,8 +18,9 @@ AppDataSource
 
 app.set('view engine', 'ejs');
 app.set('views', './src/views')
-app.use(bodyParser.json())
+// app.use(bodyParser.json())
 app.use(express.json())
+app.use(bodyParser.urlencoded({ extended: false }));
 
 app.get('/', async (req: Request, res:Response) => {
     let blogs =  await AppDataSource.getRepository(Blog).find()
@@ -32,28 +33,68 @@ app.get('/add',(req: Request, res:Response) => {
 
 app.post('/add',async (req: any, res:any) => {
 
-       let blog = new Blog();
-       blog.title = req.body.title
-        blog.content = req.body.content
+       let blog = {
+           title : req.body.title,
+           content : req.body.content
+       }
+
        const blogRepo = AppDataSource.getRepository(Blog)
-    console.log(req.body)
+    console.log(blog)
        await blogRepo.save(blog)
 
        res.redirect('/')
 
 })
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, './src/public/upload')
-    },
-    filename: function (req, file, cb) {
-        console.log(file)
-        cb(null, file.originalname)
-    }
+app.get('/blog/:id',async (req: any, res:any) => {
+    let id = req.params.id;
+    let blog =  await AppDataSource.getRepository(Blog).findOne({
+        where:{
+            id:id
+        }
+    })
+
+    console.log(blog)
+    res.render('blog', {blog: blog})
+
 })
 
-app.get('/blog')
+app.get('/delete/:id', async (req: Request, res:Response) => {
+    let id = req.params.id;
+    await AppDataSource
+        .createQueryBuilder()
+        .delete()
+        .from(Blog)
+        .where('id = :id', {id: id})
+        .execute()
+    res.redirect('/')
+})
+
+app.get('/edit/:id',async (req: any, res:any) => {
+    let id = req.params.id;
+    let blog =  await AppDataSource.getRepository(Blog).findOne({
+        where:{
+            id:id
+        }
+    })
+    res.render('edit', {blog: blog})
+})
+
+app.post('/edit/:id', async (req: any, res:any) => {
+    let id = req.params.id;
+    console.log(id)
+    await AppDataSource
+        .createQueryBuilder()
+        .update(Blog)
+        .set({
+            title: req.body.title,
+            content: req.body.content
+        })
+        .where('id = :id', {id:id})
+        .execute()
+
+    res.redirect('/')
+})
 
 app.listen(3000, () => {
     console.log('Server is running on port 3000')

@@ -20,8 +20,8 @@ data_source_1.AppDataSource
 });
 app.set('view engine', 'ejs');
 app.set('views', './src/views');
-app.use(body_parser_1.default.json());
 app.use(express_1.default.json());
+app.use(body_parser_1.default.urlencoded({ extended: false }));
 app.get('/', async (req, res) => {
     let blogs = await data_source_1.AppDataSource.getRepository(Blog_1.Blog).find();
     res.render('list', { blogs: blogs });
@@ -30,24 +30,58 @@ app.get('/add', (req, res) => {
     res.render('create');
 });
 app.post('/add', async (req, res) => {
-    let blog = new Blog_1.Blog();
-    blog.title = req.body.title;
-    blog.content = req.body.content;
+    let blog = {
+        title: req.body.title,
+        content: req.body.content
+    };
     const blogRepo = data_source_1.AppDataSource.getRepository(Blog_1.Blog);
-    console.log(req.body);
+    console.log(blog);
     await blogRepo.save(blog);
     res.redirect('/');
 });
-const storage = multer_1.default.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, './src/public/upload');
-    },
-    filename: function (req, file, cb) {
-        console.log(file);
-        cb(null, file.originalname);
-    }
+app.get('/blog/:id', async (req, res) => {
+    let id = req.params.id;
+    let blog = await data_source_1.AppDataSource.getRepository(Blog_1.Blog).findOne({
+        where: {
+            id: id
+        }
+    });
+    console.log(blog);
+    res.render('blog', { blog: blog });
 });
-app.get('/blog');
+app.get('/delete/:id', async (req, res) => {
+    let id = req.params.id;
+    await data_source_1.AppDataSource
+        .createQueryBuilder()
+        .delete()
+        .from(Blog_1.Blog)
+        .where('id = :id', { id: id })
+        .execute();
+    res.redirect('/');
+});
+app.get('/edit/:id', async (req, res) => {
+    let id = req.params.id;
+    let blog = await data_source_1.AppDataSource.getRepository(Blog_1.Blog).findOne({
+        where: {
+            id: id
+        }
+    });
+    res.render('edit', { blog: blog });
+});
+app.post('/edit/:id', async (req, res) => {
+    let id = req.params.id;
+    console.log(id);
+    await data_source_1.AppDataSource
+        .createQueryBuilder()
+        .update(Blog_1.Blog)
+        .set({
+        title: req.body.title,
+        content: req.body.content
+    })
+        .where('id = :id', { id: id })
+        .execute();
+    res.redirect('/');
+});
 app.listen(3000, () => {
     console.log('Server is running on port 3000');
 });

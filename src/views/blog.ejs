@@ -24,27 +24,11 @@
             </ul>
         </div>
     </nav>
-    <table class="table table-striped">
-        <thead>
-        <tr>
-            <th scope="col">#</th>
-            <th scope="col">Title</th>
-        </tr>
-        </thead>
-        <tbody>
-        <%blogs.forEach((item) => {%>
-        <tr>
-            <th scope="row"><%= item.id%></th>
-            <td><a href="/blog/<%= item.id%>"><%= item.title%></a></td>
-            <td>
-                <a href="/edit/<%= item.id%>"><button type="button" class="btn btn-primary">Edit</button></a>
-                <a onclick="return confirm('Are you sure?')" href="/delete/<%= item.id%>"><button type="button" class="btn btn-danger">Delete</button></a>
+    <p>
+        <%= blog.title%>
+        <%= blog.content%>
+    </p>
 
-            </td>
-        </tr>
-        <%})%>
-        </tbody>
-    </table>
 </div>
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
         integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
